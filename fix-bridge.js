@@ -1,12 +1,26 @@
 const fs = require('fs');
-let c = fs.readFileSync('lib/useSettings.ts', 'utf8');
+let c = fs.readFileSync('components/SendModal.tsx', 'utf8');
 
-// Remove all stray backtick blocks
-c = c.replace(/\`\`\`\n/g, '');
-c = c.replace(/\n\`\`\`/g, '');
-c = c.replace(/```\n/g, '');
-c = c.replace(/\n```/g, '');
-c = c.replace(/```/g, '');
+c = c.replace(
+  'const hash = await writeContractAsync({',
+  'const hash = await writeContractAsync({'
+);
 
-fs.writeFileSync('lib/useSettings.ts', c);
-console.log('Fixed! Removed stray backticks.');
+// Add as any to writeContractAsync call
+c = c.replace(
+  '      const hash = await writeContractAsync({\n' +
+  '        address: tokenAddress as `0x${string}`,\n' +
+  '        abi: usdcAbi,\n' +
+  '        functionName: "transfer",\n' +
+  '        args: [toAddress as `0x${string}`, parseUnits(amount, USDC_DECIMALS)],\n' +
+  '      });',
+  '      const hash = await writeContractAsync({\n' +
+  '        address: tokenAddress as `0x${string}`,\n' +
+  '        abi: usdcAbi,\n' +
+  '        functionName: "transfer",\n' +
+  '        args: [toAddress as `0x${string}`, parseUnits(amount, USDC_DECIMALS)],\n' +
+  '      } as any);'
+);
+
+fs.writeFileSync('components/SendModal.tsx', c);
+console.log('Fixed SendModal.');

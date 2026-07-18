@@ -73,14 +73,14 @@ function PayContent() {
       abi: ZARPAY_SWAP_POOL_ABI,
       functionName: "payMerchant",
       args: [merchantAddress as `0x${string}`, amountIn],
-    });
+    } as any);
   }
   function handlePay() {
     if (!isConnected||!amount||Number(amount)<=0) return;
     resetApprove(); resetPay();
     if (needsApproval) {
       setStep("approving");
-      writeApprove({ address: USDC_ADDRESS, abi: ERC20_ABI, functionName: "approve", args: [ZARPAY_SWAP_POOL_ADDRESS, amountIn] });
+      writeApprove({ address: USDC_ADDRESS, abi: ERC20_ABI, functionName: "approve", args: [ZARPAY_SWAP_POOL_ADDRESS, amountIn] } as any);
     } else { runPay(); }
   }
   const isPending = step==="approving"||step==="paying"||approveConfirming||payConfirming;

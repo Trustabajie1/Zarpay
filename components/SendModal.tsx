@@ -29,7 +29,7 @@ export function SendModal({ onClose }: Props) {
         abi: usdcAbi,
         functionName: "transfer",
         args: [toAddress as `0x${string}`, parseUnits(amount, USDC_DECIMALS)],
-      });
+      } as any);
       setTxHash(hash);
       setStatus("success");
     } catch (err: any) {

@@ -131,12 +131,12 @@ export default function WalletPage() {
 
   function runSwap() {
     setSwapStep("swapping");
-    writeSwap({ address: ZARPAY_SWAP_POOL_ADDRESS, abi: ZARPAY_SWAP_POOL_ABI, functionName: isUsdcToEurc ? "swapUSDCtoEURC" : "swapEURCtoUSDC", args: [amountIn] });
+    writeSwap({ address: ZARPAY_SWAP_POOL_ADDRESS, abi: ZARPAY_SWAP_POOL_ABI, functionName: isUsdcToEurc ? "swapUSDCtoEURC" : "swapEURCtoUSDC", args: [amountIn] } as any);
   }
   function handleSwap() {
     if (!swapAmount || Number(swapAmount) <= 0 || fromToken === toToken) return;
     resetApprove(); resetSwap(); setSwapMsg("");
-    if (needsApproval) { setSwapStep("approving"); writeApprove({ address: TOKEN_ADDRESSES[fromToken], abi: ERC20_ABI, functionName: "approve", args: [ZARPAY_SWAP_POOL_ADDRESS, amountIn] }); }
+    if (needsApproval) { setSwapStep("approving"); writeApprove({ address: TOKEN_ADDRESSES[fromToken], abi: ERC20_ABI, functionName: "approve", args: [ZARPAY_SWAP_POOL_ADDRESS, amountIn] } as any); }
     else { runSwap(); }
   }
   function resetSwapState() { setSwapStep("idle"); setSwapAmount(""); setNetOut(""); setFeeAmount(""); setSwapMsg(""); resetApprove(); resetSwap(); }

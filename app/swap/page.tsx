@@ -115,7 +115,7 @@ export default function SwapPage() {
       abi: ZARPAY_SWAP_POOL_ABI,
       functionName: isUsdcToEurc ? "swapUSDCtoEURC" : "swapEURCtoUSDC",
       args: [amountIn],
-    });
+    } as any);
   }
 
   function handleConvert() {
@@ -126,7 +126,7 @@ export default function SwapPage() {
     if (needsApproval) {
       setStep("approving");
       setSwapMessage("Approving ZarPay to access this amount...");
-      writeApprove({ address: TOKEN_ADDRESSES[fromToken], abi: ERC20_ABI, functionName: "approve", args: [ZARPAY_SWAP_POOL_ADDRESS, amountIn] });
+      writeApprove({ address: TOKEN_ADDRESSES[fromToken], abi: ERC20_ABI, functionName: "approve", args: [ZARPAY_SWAP_POOL_ADDRESS, amountIn] } as any);
     } else { runSwap(); }
   }
 
