@@ -60,8 +60,7 @@ const response = await fetch(
 cache: "no-store",
 }
 );
-
-```
+
 if (!response.ok) {
   throw new Error("Failed to fetch exchange rates");
 }
@@ -73,18 +72,15 @@ return {
   NGN: Number(data?.rates?.NGN) || FALLBACK_RATES.NGN,
   GBP: Number(data?.rates?.GBP) || FALLBACK_RATES.GBP,
   EUR: Number(data?.rates?.EUR) || FALLBACK_RATES.EUR,
-};
-```
+};
 
 } catch (error) {
 console.error(
 "Failed to fetch live rates:",
 error
 );
-
-```
-return FALLBACK_RATES;
-```
+
+return FALLBACK_RATES;
 
 }
 }
@@ -109,8 +105,7 @@ export function loadSettings(): AppSettings {
 try {
 const stored =
 localStorage.getItem(STORAGE_KEY);
-
-```
+
 if (stored) {
   const parsed = JSON.parse(stored);
 
@@ -118,8 +113,7 @@ if (stored) {
     ...DEFAULT_SETTINGS,
     ...parsed,
   };
-}
-```
+}
 
 } catch (error) {
 console.error(

@@ -285,14 +285,18 @@ export default function WalletPage() {
               <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid " + border, background: bg, display: "flex", alignItems: "center", justifyContent: "center", color: "#4ade80", fontSize: "16px" }}>↓</div>
               </div>
-              <p style={{ color: subText, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>To</p>
-              <div style={{ background: inputBg, border: "1px solid " + border, borderRadius: "14px", padding: "16px", marginBottom: "16px" }}>
-                <select value={bridgeRoute.to} onChange={e => setBridgeRoute(BRIDGE_ROUTES.find(r => r.to === e.target.value) || BRIDGE_ROUTES[0])}
-                  style={{ width: "100%", background: "none", border: "none", outline: "none", color: text, fontSize: "15px", fontWeight: "700", cursor: "pointer" }}>
-                  {BRIDGE_ROUTES.map(r => <option key={r.to} value={r.to}>{r.to}</option>)}
-                </select>
-                <p style={{ color: subText, fontSize: "11px", margin: "6px 0 0" }}>Estimated time: {bridgeRoute.time}</p>
+              <p style={{ color: subText, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>To</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "10px" }}>
+                {BRIDGE_ROUTES.map(r => (
+                  <button key={r.to} onClick={() => setBridgeRoute(r)}
+                    style={{ padding: "12px 8px", borderRadius: "12px", border: "1px solid " + (bridgeRoute.to === r.to ? "rgba(74,222,128,0.4)" : border), background: bridgeRoute.to === r.to ? "rgba(74,222,128,0.08)" : inputBg, color: bridgeRoute.to === r.to ? "#4ade80" : text, cursor: "pointer", fontSize: "11px", fontWeight: bridgeRoute.to === r.to ? "700" : "400", textAlign: "center" }}>
+                    {r.to}
+                  </button>
+                ))}
               </div>
+              <p style={{ color: subText, fontSize: "11px", textAlign: "center", marginBottom: "16px" }}>Est. time: {bridgeRoute.time}</p>
+              <p style={{ color: subText, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>To</p>
+              
               {bridgeAmount && Number(bridgeAmount) > 0 && (
                 <div style={{ background: bg, border: "1px solid " + border, borderRadius: "10px", padding: "12px", marginBottom: "16px" }}>
                   {[

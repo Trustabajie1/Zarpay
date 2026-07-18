@@ -1,5 +1,12 @@
 const fs = require('fs');
-let c = fs.readFileSync('app/wallet/page.tsx', 'utf8');
+let c = fs.readFileSync('lib/useSettings.ts', 'utf8');
 
-console.log('Has old select:', c.includes('select value={bridgeRoute'));
-console.log('Has new grid:', c.includes('gridTemplateColumns: "1fr 1fr 1fr"'));
+// Remove all stray backtick blocks
+c = c.replace(/\`\`\`\n/g, '');
+c = c.replace(/\n\`\`\`/g, '');
+c = c.replace(/```\n/g, '');
+c = c.replace(/\n```/g, '');
+c = c.replace(/```/g, '');
+
+fs.writeFileSync('lib/useSettings.ts', c);
+console.log('Fixed! Removed stray backticks.');
