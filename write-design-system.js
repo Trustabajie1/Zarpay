@@ -1,4 +1,7 @@
+const fs = require('fs');
 
+// SHARED DESIGN TOKENS — injected into every page via globals.css
+const globals = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
@@ -308,21 +311,13 @@ input, select, textarea, button {
   border: 1px solid rgba(231,76,60,0.25);
   color: var(--red);
 }
+`;
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+// Read existing globals.css and prepend our tokens
+let existing = fs.readFileSync('app/globals.css', 'utf8');
 
-body {
-  background-color: #0a0f14;
-  color: #f0f4f8;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-}
-/* Token icon upgrade */
-.zp-token-icon {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
+// Remove old font imports if any
+existing = existing.replace(/@import url\([^)]+\);\n?/g, '');
+
+fs.writeFileSync('app/globals.css', globals + '\n' + existing);
+console.log('✅ Design tokens written to globals.css');

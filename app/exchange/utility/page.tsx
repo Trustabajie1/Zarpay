@@ -2,40 +2,30 @@
 import { useRouter } from "next/navigation";
 import { useAppSettings } from "@/components/SettingsContext";
 import { BottomNav } from "@/components/BottomNav";
+import { PageHeader } from "@/components/PageHeader";
 const UTILITIES = [
-  { label:"Airtime", icon:"📱", path:"/exchange/utility/airtime" },
-  { label:"Electricity", icon:"⚡", path:"/exchange/utility/electricity" },
-  { label:"Data", icon:"📶", path:"/exchange/utility/data" },
-  { label:"TV", icon:"📺", path:"/exchange/utility/tv" },
-  { label:"Internet", icon:"🌐", path:"/exchange/utility/internet" },
-  { label:"Water", icon:"💧", path:"/exchange/utility/water" },
+  { label:"Airtime", icon:"📱", path:"/exchange/utility/airtime", color:"rgba(46,204,113,0.15)", iconColor:"var(--green)" },
+  { label:"Electricity", icon:"⚡", path:"/exchange/utility/electricity", color:"rgba(240,165,0,0.15)", iconColor:"var(--amber)" },
+  { label:"Data", icon:"📶", path:"/exchange/utility/data", color:"rgba(59,130,246,0.15)", iconColor:"#3B82F6" },
+  { label:"TV", icon:"📺", path:"/exchange/utility/tv", color:"rgba(167,139,250,0.15)", iconColor:"#A78BFA" },
+  { label:"Internet", icon:"🌐", path:"/exchange/utility/internet", color:"rgba(52,211,153,0.15)", iconColor:"#34D399" },
+  { label:"Water", icon:"💧", path:"/exchange/utility/water", color:"rgba(56,189,248,0.15)", iconColor:"#38BDF8" },
 ];
 export default function UtilityPage() {
   const router = useRouter();
-  const { settings } = useAppSettings();
-  const isDark = settings.theme === "dark";
-  const bg = isDark ? "#0a0f14" : "#f0f4f8";
-  const card = isDark ? "#0e1318" : "#ffffff";
-  const border = isDark ? "#1f2937" : "#e2e8f0";
-  const text = isDark ? "#ffffff" : "#0a0f14";
-  const subText = isDark ? "#6b7280" : "#94a3b8";
   return (
-    <main style={{ minHeight:"100vh", background:bg, padding:"24px 16px 100px", display:"flex", flexDirection:"column", alignItems:"center" }}>
-      <div style={{ width:"100%", maxWidth:"440px", display:"flex", alignItems:"center", gap:"12px", marginBottom:"28px" }}>
-        <button onClick={() => router.back()} style={{ background:"none", border:"none", color:text, fontSize:"20px", cursor:"pointer" }}>←</button>
-        <h1 style={{ color:text, fontSize:"20px", fontWeight:"700" }}>Utility Bills</h1>
-        <div style={{ marginLeft:"auto", background:"rgba(245,158,11,0.1)", border:"1px solid rgba(245,158,11,0.2)", borderRadius:"8px", padding:"4px 10px" }}>
-          <span style={{ color:"#f59e0b", fontSize:"11px" }}>Demo Mode</span>
+    <main className="zp-page">
+      <div className="zp-content">
+        <PageHeader title="Utility Bills" badge="Demo Mode" />
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"10px" }}>
+          {UTILITIES.map(u => (
+            <button key={u.path} onClick={() => router.push(u.path)}
+              style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:"16px", padding:"20px 16px", display:"flex", flexDirection:"column", alignItems:"flex-start", gap:"12px", cursor:"pointer" }}>
+              <div style={{ width:"44px", height:"44px", borderRadius:"14px", background:u.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"22px" }}>{u.icon}</div>
+              <p style={{ fontSize:"14px", fontWeight:"700", color:"var(--text)" }}>{u.label}</p>
+            </button>
+          ))}
         </div>
-      </div>
-      <div style={{ width:"100%", maxWidth:"440px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px" }}>
-        {UTILITIES.map(u => (
-          <button key={u.path} onClick={() => router.push(u.path)}
-            style={{ background:card, border:"1px solid "+border, borderRadius:"20px", padding:"24px 16px", display:"flex", flexDirection:"column", alignItems:"flex-start", gap:"10px", cursor:"pointer" }}>
-            <div style={{ width:"44px", height:"44px", borderRadius:"12px", background:"rgba(74,222,128,0.08)", border:"1px solid rgba(74,222,128,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"20px" }}>{u.icon}</div>
-            <p style={{ color:text, fontWeight:"700", fontSize:"15px", margin:0 }}>{u.label}</p>
-          </button>
-        ))}
       </div>
       <BottomNav />
     </main>

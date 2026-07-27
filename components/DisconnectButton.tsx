@@ -1,42 +1,10 @@
 "use client";
-
-import { useEffect, useState } from "react";
-import { useDisconnect, useAccount } from "wagmi";
-import { useRouter } from "next/navigation";
-
+import { useDisconnect } from "wagmi";
 export function DisconnectButton() {
   const { disconnect } = useDisconnect();
-  const { isConnected } = useAccount();
-  const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
-
-  useEffect(() => {
-    if (mounted && !isConnected) {
-      router.push("/");
-    }
-  }, [isConnected, mounted, router]);
-
-  function handleDisconnect() {
-    disconnect();
-  }
-
-  if (!mounted) return null;
-
   return (
-    <button
-      onClick={handleDisconnect}
-      style={{
-        fontSize: "12px",
-        color: "#6b7280",
-        border: "1px solid #374151",
-        borderRadius: "8px",
-        padding: "6px 12px",
-        background: "transparent",
-        cursor: "pointer",
-      }}
-    >
+    <button onClick={() => disconnect()}
+      style={{ padding:"8px 14px", borderRadius:"8px", border:"1px solid var(--border)", background:"var(--surface-2)", color:"var(--text-2)", fontSize:"12px", fontWeight:"600", cursor:"pointer", letterSpacing:"0.02em" }}>
       Disconnect
     </button>
   );
