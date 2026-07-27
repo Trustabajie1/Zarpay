@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ZarPay 🟢
+
+> Stablecoin-powered P2P payment app built on Arc Network
+
+ZarPay is a Web3 fintech application that simplifies crypto payments using USDC and EURC stablecoins on Arc Network — a purpose-built L1 blockchain for real-world financial activity.
+
+## Features
+
+- 🔐 Wallet connect via RainbowKit + MetaMask
+- 💰 Live USDC & EURC balances on Arc Testnet
+- ↑ Send USDC/EURC transactions on Arc Network
+- ↓ Receive with QR code
+- ⇄ Exchange USDC ↔ EURC
+- 📜 Transaction history via ArcScan
+- 🌐 Multi-language support (8 languages)
+- 🎨 Dark/Light theme
+- 💱 Multi-currency display (NGN, USD, GBP, EUR)
+
+## Tech Stack
+
+- **Frontend:** Next.js 14, React, TypeScript
+- **Web3:** wagmi, RainbowKit, viem
+- **Blockchain:** Arc Testnet (Chain ID: 5042002)
+- **Tokens:** USDC, EURC (Circle)
+- **Explorer:** ArcScan
+
+## Network Details
+
+| Parameter | Value |
+|-----------|-------|
+| Network | Arc Testnet |
+| Chain ID | 5042002 |
+| RPC | https://rpc.testnet.arc.network |
+| Explorer | https://testnet.arcscan.app |
+| Faucet | https://faucet.circle.com |
+
+## Contract Addresses
+
+| Token | Address |
+|-------|---------|
+| USDC | 0x3600000000000000000000000000000000000000 |
+| EURC | 0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a |
+| Permit2 | 0x000000000022D473030F116dDEE9F6B43aC78BA3 |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+git clone https://github.com/Trustabajie1/Zarpay.git
+cd Zarpay
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Testing
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+1. Add Arc Testnet to MetaMask (Chain ID: 5042002)
+2. Get testnet USDC from [faucet.circle.com](https://faucet.circle.com)
+3. Connect wallet and start testing!
 
-## Learn More
+## Built For
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+ZarPay is designed to bridge traditional local currency systems with modern blockchain finance — starting with emerging markets like Africa where stablecoin payments can replace slow, expensive traditional transfers.
