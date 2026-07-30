@@ -6,7 +6,9 @@ import { parseUnits, formatUnits } from "viem";
 import { useAppSettings } from "@/components/SettingsContext";
 import { useWalletBalance } from "@/lib/useWalletBalance";
 import { BottomNav } from "@/components/BottomNav";
+import { PageHeader } from "@/components/PageHeader";
 import { USDC_ADDRESS, ZARPAY_SWAP_POOL_ADDRESS, ERC20_ABI, ZARPAY_SWAP_POOL_ABI, TOKEN_DECIMALS } from "@/lib/contracts";
+
 function PayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -14,25 +16,22 @@ function PayContent() {
   const { address, isConnected } = useAccount();
   const { settings } = useAppSettings();
   const { usdcFormatted } = useWalletBalance(address);
-  const isDark = settings.theme === "dark";
-  const bg = isDark ? "#0a0f14" : "#f0f4f8";
-  const card = isDark ? "#0e1318" : "#ffffff";
-  const border = isDark ? "#1f2937" : "#e2e8f0";
-  const inputBg = isDark ? "#111827" : "#f8fafc";
-  const text = isDark ? "#ffffff" : "#0a0f14";
-  const subText = isDark ? "#6b7280" : "#94a3b8";
   const [amount, setAmount] = useState("");
   const [netOut, setNetOut] = useState("");
   const [feeAmount, setFeeAmount] = useState("");
   const [step, setStep] = useState("qr");
   const [merchant, setMerchant] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
+
   const amountIn = amount && Number(amount) > 0 ? parseUnits(amount, TOKEN_DECIMALS) : BigInt(0);
+
   useEffect(() => {
     if (merchantAddress) {
       const saved = localStorage.getItem("zarpay_merchant_"+merchantAddress);
       if (saved) setMerchant(JSON.parse(saved));
     }
   }, [merchantAddress]);
+
   const { refetch: refetchPreview } = useReadContract({
     address: ZARPAY_SWAP_POOL_ADDRESS,
     abi: ZARPAY_SWAP_POOL_ABI,
@@ -40,6 +39,7 @@ function PayContent() {
     args: [amountIn, true],
     query: { enabled: false },
   });
+
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: USDC_ADDRESS,
     abi: ERC20_ABI,
@@ -47,17 +47,21 @@ function PayContent() {
     args: address ? [address, ZARPAY_SWAP_POOL_ADDRESS] : undefined,
     query: { enabled: !!address },
   });
+
   const needsApproval = !allowance || allowance < amountIn;
   const { writeContract: writeApprove, data: approveHash, error: approveError, reset: resetApprove } = useWriteContract();
   const { writeContract: writePay, data: payHash, error: payError, reset: resetPay } = useWriteContract();
   const { isLoading: approveConfirming, isSuccess: approveConfirmed } = useWaitForTransactionReceipt({ hash: approveHash });
   const { isLoading: payConfirming, isSuccess: payConfirmed } = useWaitForTransactionReceipt({ hash: payHash });
+
   useEffect(() => {
-    if (approveConfirmed && step === "approving") { refetchAllowance(); runPay(); }
+    if (approveConfirmed && step==="approving") { refetchAllowance(); runPay(); }
   }, [approveConfirmed]);
+
   useEffect(() => {
-    if (payConfirmed && step === "paying") setStep("success");
+    if (payConfirmed && step==="paying") setStep("success");
   }, [payConfirmed]);
+
   useEffect(() => {
     if (amountIn > BigInt(0)) {
       refetchPreview().then(res => {
@@ -66,91 +70,111 @@ function PayContent() {
       });
     } else { setNetOut(""); setFeeAmount(""); }
   }, [amount]);
+
   function runPay() {
     setStep("paying");
-    writePay({
-      address: ZARPAY_SWAP_POOL_ADDRESS,
-      abi: ZARPAY_SWAP_POOL_ABI,
-      functionName: "payMerchant",
-      args: [merchantAddress as `0x${string}`, amountIn],
-    } as any);
+    writePay({ address:ZARPAY_SWAP_POOL_ADDRESS, abi:ZARPAY_SWAP_POOL_ABI, functionName:"payMerchant", args:[merchantAddress as `0x${string}`, amountIn] } as any);
   }
+
   function handlePay() {
     if (!isConnected||!amount||Number(amount)<=0) return;
     resetApprove(); resetPay();
-    if (needsApproval) {
-      setStep("approving");
-      writeApprove({ address: USDC_ADDRESS, abi: ERC20_ABI, functionName: "approve", args: [ZARPAY_SWAP_POOL_ADDRESS, amountIn] } as any);
-    } else { runPay(); }
+    if (needsApproval) { setStep("approving"); writeApprove({ address:USDC_ADDRESS, abi:ERC20_ABI, functionName:"approve", args:[ZARPAY_SWAP_POOL_ADDRESS,amountIn] } as any); }
+    else { runPay(); }
   }
+
+  function handleCopyAddress() {
+    navigator.clipboard.writeText(merchantAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   const isPending = step==="approving"||step==="paying"||approveConfirming||payConfirming;
-  const qrUrl = merchantAddress ? "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent("https://zarpay.app/merchant/pay?merchant="+merchantAddress)+"&bgcolor=0e1318&color=4ade80" : "";
+  const qrUrl = merchantAddress
+    ? "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent("https://zarpay-ten.vercel.app/merchant/pay?merchant="+merchantAddress)+"&bgcolor=080C12&color=2ECC71&margin=16"
+    : "";
+
   return (
-    <main style={{ minHeight:"100vh", background:bg, padding:"24px 16px 100px", display:"flex", flexDirection:"column", alignItems:"center" }}>
-      <div style={{ width:"100%", maxWidth:"440px", display:"flex", alignItems:"center", gap:"12px", marginBottom:"28px" }}>
-        <button onClick={() => router.back()} style={{ background:"none", border:"none", color:text, fontSize:"20px", cursor:"pointer" }}>←</button>
-        <h1 style={{ color:text, fontSize:"20px", fontWeight:"700" }}>{merchant ? merchant.name : "Pay Merchant"}</h1>
-      </div>
-      {step === "qr" && (
-        <>
-          <div style={{ width:"100%", maxWidth:"440px", background:card, border:"1px solid "+border, borderRadius:"20px", padding:"24px", marginBottom:"16px", display:"flex", flexDirection:"column", alignItems:"center", gap:"16px" }}>
-            {merchant && <p style={{ color:subText, fontSize:"13px", margin:0 }}>{merchant.category}</p>}
-            <div style={{ background:"#0e1318", border:"1px solid #14532d", borderRadius:"16px", padding:"16px" }}>
-              <img src={qrUrl} alt="Payment QR" width={180} height={180} style={{ borderRadius:"8px", display:"block" }} />
-            </div>
-            <p style={{ color:subText, fontSize:"11px", textAlign:"center" }}>Customer scans this QR to pay with USDC → merchant receives EURC</p>
-            <p style={{ color:"#4ade80", fontSize:"11px", fontFamily:"monospace", wordBreak:"break-all", textAlign:"center" }}>{merchantAddress}</p>
-          </div>
-          {isConnected && address !== merchantAddress && (
-            <>
-              <div style={{ width:"100%", maxWidth:"440px", background:card, border:"1px solid "+border, borderRadius:"20px", padding:"20px", marginBottom:"12px" }}>
-                <p style={{ color:subText, fontSize:"11px", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:"12px" }}>Pay Amount (USDC)</p>
-                <p style={{ color:subText, fontSize:"12px", marginBottom:"12px", textAlign:"right" }}>Balance: {usdcFormatted} USDC</p>
-                <input type="number" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)}
-                  style={{ width:"100%", padding:"14px", borderRadius:"12px", border:"1px solid "+border, background:inputBg, color:text, fontSize:"18px", fontWeight:"700", boxSizing:"border-box" }} />
-                {netOut && (
-                  <div style={{ marginTop:"12px", padding:"12px", borderRadius:"10px", background:bg, border:"1px solid "+border }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px" }}>
-                      <span style={{ color:subText, fontSize:"12px" }}>Merchant receives</span>
-                      <span style={{ color:"#4ade80", fontSize:"12px", fontWeight:"700" }}>{netOut} EURC</span>
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between" }}>
-                      <span style={{ color:subText, fontSize:"12px" }}>ZarPay fee (0.5%)</span>
-                      <span style={{ color:subText, fontSize:"12px" }}>{feeAmount} EURC</span>
-                    </div>
-                  </div>
-                )}
+    <main className="zp-page">
+      <div className="zp-content">
+        <PageHeader title={merchant ? merchant.name : "Pay Merchant"} />
+
+        {/* QR Card */}
+        <div style={{ background:"linear-gradient(135deg, #0D1621, #0F1E30)", border:"1px solid var(--green-border)", borderRadius:"20px", padding:"24px", display:"flex", flexDirection:"column", alignItems:"center", gap:"16px" }}>
+          {merchant && (
+            <div style={{ display:"flex", alignItems:"center", gap:"10px", alignSelf:"flex-start" }}>
+              <div style={{ width:"36px", height:"36px", borderRadius:"10px", background:"var(--green-dim)", border:"1px solid var(--green-border)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px" }}>{merchant.emoji}</div>
+              <div>
+                <p style={{ fontSize:"14px", fontWeight:"700", color:"var(--text)", margin:0 }}>{merchant.name}</p>
+                <p style={{ fontSize:"11px", color:"var(--text-2)", margin:0 }}>{merchant.category}</p>
               </div>
-              <button onClick={handlePay} disabled={!amount||Number(amount)<=0}
-                style={{ width:"100%", maxWidth:"440px", padding:"18px", borderRadius:"16px", border:"none", background:!amount||Number(amount)<=0?"#1f2937":"#4ade80", color:!amount||Number(amount)<=0?"#4b5563":"#111", fontWeight:"700", fontSize:"16px", cursor:!amount||Number(amount)<=0?"not-allowed":"pointer" }}>
-                {!amount?"Enter amount":"Pay "+merchant?.name||"Merchant"}
-              </button>
-            </>
+            </div>
           )}
-        </>
-      )}
-      {isPending && (
-        <div style={{ width:"100%", maxWidth:"440px", background:card, border:"1px solid "+border, borderRadius:"20px", padding:"40px", display:"flex", flexDirection:"column", alignItems:"center", gap:"16px" }}>
-          <div style={{ width:"48px", height:"48px", borderRadius:"50%", border:"4px solid "+border, borderTop:"4px solid #4ade80", animation:"spin 1s linear infinite" }} />
-          <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
-          <p style={{ color:text, fontWeight:"700" }}>{step==="approving"?(approveConfirming?"Confirming approval...":"Waiting for approval..."):(payConfirming?"Confirming payment...":"Waiting for confirmation...")}</p>
-          {step==="approving" && <p style={{ color:subText, fontSize:"12px", textAlign:"center" }}>Step 1 of 2 — approval then payment</p>}
+          <div style={{ background:"#080C12", border:"1px solid var(--border)", borderRadius:"16px", padding:"16px" }}>
+            {qrUrl && <img src={qrUrl} alt="Payment QR" width={180} height={180} style={{ borderRadius:"8px", display:"block" }} />}
+          </div>
+          <p style={{ fontSize:"12px", color:"var(--text-2)", textAlign:"center" }}>Customer scans this QR to pay with USDC → you receive EURC</p>
+          <button onClick={handleCopyAddress}
+            style={{ width:"100%", padding:"12px", borderRadius:"12px", border:"1px solid "+(copied?"var(--green-border)":"var(--border)"), background:copied?"var(--green-dim)":"var(--surface-2)", color:copied?"var(--green)":"var(--text-2)", cursor:"pointer", fontSize:"13px", fontWeight:"600", fontFamily:"monospace", transition:"all 0.2s" }}>
+            {copied ? "✓ Address Copied!" : merchantAddress.slice(0,20)+"..."}
+          </button>
         </div>
-      )}
-      {step === "success" && (
-        <div style={{ width:"100%", maxWidth:"440px", background:card, border:"1px solid rgba(74,222,128,0.3)", borderRadius:"20px", padding:"40px", display:"flex", flexDirection:"column", alignItems:"center", gap:"12px" }}>
-          <div style={{ width:"60px", height:"60px", borderRadius:"50%", background:"rgba(74,222,128,0.1)", border:"1px solid rgba(74,222,128,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"28px" }}>✓</div>
-          <p style={{ color:text, fontWeight:"700", fontSize:"20px" }}>Payment Sent!</p>
-          <p style={{ color:subText, fontSize:"13px", textAlign:"center" }}>{amount} USDC → {netOut} EURC to {merchant?.name||"merchant"}</p>
-          {payHash && <a href={"https://testnet.arcscan.app/tx/"+payHash} target="_blank" rel="noopener noreferrer" style={{ color:"#4ade80", fontSize:"12px", fontFamily:"monospace", textDecoration:"underline" }}>View on ArcScan ↗</a>}
-          <button onClick={() => { setStep("qr"); setAmount(""); setNetOut(""); setFeeAmount(""); resetApprove(); resetPay(); }}
-            style={{ background:"#4ade80", color:"#111", fontWeight:"700", fontSize:"14px", borderRadius:"12px", padding:"12px 24px", border:"none", cursor:"pointer", marginTop:"8px" }}>Pay Again</button>
-        </div>
-      )}
+
+        {/* Pay Form — only show if customer (not the merchant) */}
+        {isConnected && address !== merchantAddress && step==="qr" && (
+          <>
+            <div className="zp-card">
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"12px" }}>
+                <p className="zp-label" style={{ margin:0 }}>Pay Amount (USDC)</p>
+                <p style={{ fontSize:"12px", color:"var(--text-2)" }}>Balance: {usdcFormatted} USDC</p>
+              </div>
+              <input type="number" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)}
+                className="zp-input" style={{ fontSize:"24px", fontWeight:"800", marginBottom:"12px" }} />
+              {netOut && (
+                <div style={{ background:"var(--surface-2)", borderRadius:"10px", padding:"12px 14px", display:"flex", flexDirection:"column", gap:"6px" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between" }}>
+                    <span style={{ fontSize:"12px", color:"var(--text-2)" }}>Merchant receives</span>
+                    <span style={{ fontSize:"12px", fontWeight:"700", color:"var(--green)" }}>{netOut} EURC</span>
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between" }}>
+                    <span style={{ fontSize:"12px", color:"var(--text-2)" }}>ZarPay fee (0.5%)</span>
+                    <span style={{ fontSize:"12px", color:"var(--text-2)" }}>{feeAmount} EURC</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button onClick={handlePay} disabled={!amount||Number(amount)<=0} className="zp-btn-primary">
+              {!amount ? "Enter amount" : "Pay "+( merchant?.name || "Merchant")}
+            </button>
+          </>
+        )}
+
+        {isPending && (
+          <div className="zp-card" style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"16px", padding:"40px 24px" }}>
+            <div className="zp-spinner" />
+            <p style={{ color:"var(--text)", fontWeight:"700" }}>
+              {step==="approving"?(approveConfirming?"Confirming approval...":"Waiting for approval..."):(payConfirming?"Confirming payment...":"Waiting for confirmation...")}
+            </p>
+            {step==="approving" && <p style={{ fontSize:"12px", color:"var(--text-2)", textAlign:"center" }}>Step 1 of 2 — approval then payment</p>}
+          </div>
+        )}
+
+        {step==="success" && (
+          <div className="zp-card" style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"14px", padding:"40px 24px" }}>
+            <div className="zp-result-icon success">✓</div>
+            <p style={{ fontSize:"20px", fontWeight:"800", color:"var(--text)" }}>Payment Sent!</p>
+            <p style={{ fontSize:"13px", color:"var(--text-2)", textAlign:"center" }}>{amount} USDC → {netOut} EURC to {merchant?.name||"merchant"}</p>
+            {payHash && <a href={"https://testnet.arcscan.app/tx/"+payHash} target="_blank" rel="noopener noreferrer" style={{ fontSize:"12px", color:"var(--green)", fontFamily:"monospace", textDecoration:"underline" }}>View on ArcScan ↗</a>}
+            <button onClick={() => { setStep("qr"); setAmount(""); setNetOut(""); setFeeAmount(""); resetApprove(); resetPay(); }} className="zp-btn-primary" style={{ marginTop:"8px" }}>Pay Again</button>
+          </div>
+        )}
+
+      </div>
       <BottomNav />
     </main>
   );
 }
+
 export default function MerchantPayPage() {
   return <Suspense><PayContent /></Suspense>;
 }
