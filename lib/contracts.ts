@@ -43,18 +43,24 @@ export const ERC20_ABI = [
 ] as const;
 
 export const ZARPAY_SWAP_POOL_ABI = [
-  {
+    {
     type: "function",
     name: "swapUSDCtoEURC",
     stateMutability: "nonpayable",
-    inputs: [{ name: "amountIn", type: "uint256" }],
+    inputs: [
+      { name: "amountIn", type: "uint256" },
+      { name: "minAmountOut", type: "uint256" },
+    ],
     outputs: [{ name: "amountOut", type: "uint256" }],
   },
   {
     type: "function",
     name: "swapEURCtoUSDC",
     stateMutability: "nonpayable",
-    inputs: [{ name: "amountIn", type: "uint256" }],
+    inputs: [
+      { name: "amountIn", type: "uint256" },
+      { name: "minAmountOut", type: "uint256" },
+    ],
     outputs: [{ name: "amountOut", type: "uint256" }],
   },
   {
@@ -64,6 +70,7 @@ export const ZARPAY_SWAP_POOL_ABI = [
     inputs: [
       { name: "merchant", type: "address" },
       { name: "usdcAmountIn", type: "uint256" },
+      { name: "minEurcOut", type: "uint256" },
     ],
     outputs: [{ name: "eurcAmountOut", type: "uint256" }],
   },

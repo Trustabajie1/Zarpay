@@ -17,8 +17,10 @@ function PayContent() {
   const { settings } = useAppSettings();
   const { usdcFormatted } = useWalletBalance(address);
   const [amount, setAmount] = useState("");
-  const [netOut, setNetOut] = useState("");
+    const [netOut, setNetOut] = useState("");
   const [feeAmount, setFeeAmount] = useState("");
+  const [netOutRaw, setNetOutRaw] = useState<bigint>(BigInt(0));
+  const SLIPPAGE_TOLERANCE_BPS = BigInt(50); // 0.5%
   const [step, setStep] = useState("qr");
   const [merchant, setMerchant] = useState<any>(null);
   const [copied, setCopied] = useState(false);
@@ -62,18 +64,19 @@ function PayContent() {
     if (payConfirmed && step==="paying") setStep("success");
   }, [payConfirmed]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (amountIn > BigInt(0)) {
       refetchPreview().then(res => {
         const data = res.data as [bigint,bigint] | undefined;
-        if (data) { setNetOut(formatUnits(data[0],TOKEN_DECIMALS)); setFeeAmount(formatUnits(data[1],TOKEN_DECIMALS)); }
+        if (data) { setNetOut(formatUnits(data[0],TOKEN_DECIMALS)); setFeeAmount(formatUnits(data[1],TOKEN_DECIMALS)); setNetOutRaw(data[0]); }
       });
-    } else { setNetOut(""); setFeeAmount(""); }
+    } else { setNetOut(""); setFeeAmount(""); setNetOutRaw(BigInt(0)); }
   }, [amount]);
 
-  function runPay() {
+    function runPay() {
     setStep("paying");
-    writePay({ address:ZARPAY_SWAP_POOL_ADDRESS, abi:ZARPAY_SWAP_POOL_ABI, functionName:"payMerchant", args:[merchantAddress as `0x${string}`, amountIn] } as any);
+    const minEurcOut = netOutRaw - (netOutRaw * SLIPPAGE_TOLERANCE_BPS) / BigInt(10000);
+    writePay({ address:ZARPAY_SWAP_POOL_ADDRESS, abi:ZARPAY_SWAP_POOL_ABI, functionName:"payMerchant", args:[merchantAddress as `0x${string}`, amountIn, minEurcOut] } as any);
   }
 
   function handlePay() {

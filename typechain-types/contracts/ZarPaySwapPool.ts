@@ -131,7 +131,7 @@ export interface ZarPaySwapPoolInterface extends Interface {
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "payMerchant",
-    values: [AddressLike, BigNumberish]
+    values: [AddressLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "previewSwap",
@@ -159,11 +159,11 @@ export interface ZarPaySwapPoolInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "swapEURCtoUSDC",
-    values: [BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "swapUSDCtoEURC",
-    values: [BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
@@ -607,7 +607,11 @@ export interface ZarPaySwapPool extends BaseContract {
   paused: TypedContractMethod<[], [boolean], "view">;
 
   payMerchant: TypedContractMethod<
-    [merchant: AddressLike, usdcAmountIn: BigNumberish],
+    [
+      merchant: AddressLike,
+      usdcAmountIn: BigNumberish,
+      minEurcOut: BigNumberish
+    ],
     [bigint],
     "nonpayable"
   >;
@@ -649,13 +653,13 @@ export interface ZarPaySwapPool extends BaseContract {
   >;
 
   swapEURCtoUSDC: TypedContractMethod<
-    [amountIn: BigNumberish],
+    [amountIn: BigNumberish, minAmountOut: BigNumberish],
     [bigint],
     "nonpayable"
   >;
 
   swapUSDCtoEURC: TypedContractMethod<
-    [amountIn: BigNumberish],
+    [amountIn: BigNumberish, minAmountOut: BigNumberish],
     [bigint],
     "nonpayable"
   >;
@@ -761,7 +765,11 @@ export interface ZarPaySwapPool extends BaseContract {
   getFunction(
     nameOrSignature: "payMerchant"
   ): TypedContractMethod<
-    [merchant: AddressLike, usdcAmountIn: BigNumberish],
+    [
+      merchant: AddressLike,
+      usdcAmountIn: BigNumberish,
+      minEurcOut: BigNumberish
+    ],
     [bigint],
     "nonpayable"
   >;
@@ -805,10 +813,18 @@ export interface ZarPaySwapPool extends BaseContract {
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "swapEURCtoUSDC"
-  ): TypedContractMethod<[amountIn: BigNumberish], [bigint], "nonpayable">;
+  ): TypedContractMethod<
+    [amountIn: BigNumberish, minAmountOut: BigNumberish],
+    [bigint],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "swapUSDCtoEURC"
-  ): TypedContractMethod<[amountIn: BigNumberish], [bigint], "nonpayable">;
+  ): TypedContractMethod<
+    [amountIn: BigNumberish, minAmountOut: BigNumberish],
+    [bigint],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "unpause"
   ): TypedContractMethod<[], [void], "nonpayable">;

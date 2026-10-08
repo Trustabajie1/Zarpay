@@ -2,11 +2,15 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import * as fs from "fs";
 import * as path from "path";
+import { fileURLToPath } from "url";
+
+// ESM-safe replacement for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Read .env file manually — bypasses dotenvx interference
 const envPath = path.resolve(__dirname, ".env");
 let DEPLOYER_PRIVATE_KEY = "";
-
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, "utf8");
   const match = envContent.match(/DEPLOYER_PRIVATE_KEY=(.+)/);

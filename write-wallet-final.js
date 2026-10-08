@@ -37,7 +37,7 @@ fs.writeFileSync('components/BottomNav.tsx',
 '  );\n' +
 '}\n'
 );
-console.log('✅ BottomNav updated to 4 tabs');
+console.log('BottomNav updated to 4 tabs');
 
 // 2. UPDATE WALLET PAGE — Portfolio + Swap + Bridge tabs + Assets
 const walletContent =
@@ -90,6 +90,8 @@ const walletContent =
 '  const [swapAmount, setSwapAmount] = useState("");\n' +
 '  const [netOut, setNetOut] = useState("");\n' +
 '  const [feeAmount, setFeeAmount] = useState("");\n' +
+'  const [netOutRaw, setNetOutRaw] = useState<bigint>(BigInt(0));\n' +
+'  const SLIPPAGE_TOLERANCE_BPS = BigInt(50);\n' +
 '  const [swapStep, setSwapStep] = useState<"idle"|"approving"|"swapping"|"success"|"error">("idle");\n' +
 '  const [swapMsg, setSwapMsg] = useState("");\n' +
 '\n' +
@@ -167,14 +169,15 @@ const walletContent =
 '    if (amountIn > BigInt(0)) {\n' +
 '      refetchPreview().then(res => {\n' +
 '        const data = res.data as [bigint, bigint] | undefined;\n' +
-'        if (data) { setNetOut(formatUnits(data[0], TOKEN_DECIMALS)); setFeeAmount(formatUnits(data[1], TOKEN_DECIMALS)); }\n' +
+'        if (data) { setNetOut(formatUnits(data[0], TOKEN_DECIMALS)); setFeeAmount(formatUnits(data[1], TOKEN_DECIMALS)); setNetOutRaw(data[0]); }\n' +
 '      });\n' +
-'    } else { setNetOut(""); setFeeAmount(""); }\n' +
+'    } else { setNetOut(""); setFeeAmount(""); setNetOutRaw(BigInt(0)); }\n' +
 '  }, [swapAmount, fromToken, toToken]);\n' +
 '\n' +
 '  function runSwap() {\n' +
 '    setSwapStep("swapping");\n' +
-'    writeSwap({ address: ZARPAY_SWAP_POOL_ADDRESS, abi: ZARPAY_SWAP_POOL_ABI, functionName: isUsdcToEurc ? "swapUSDCtoEURC" : "swapEURCtoUSDC", args: [amountIn] });\n' +
+'    const minAmountOut = netOutRaw - (netOutRaw * SLIPPAGE_TOLERANCE_BPS) / BigInt(10000);\n' +
+'    writeSwap({ address: ZARPAY_SWAP_POOL_ADDRESS, abi: ZARPAY_SWAP_POOL_ABI, functionName: isUsdcToEurc ? "swapUSDCtoEURC" : "swapEURCtoUSDC", args: [amountIn, minAmountOut] });\n' +
 '  }\n' +
 '  function handleSwap() {\n' +
 '    if (!swapAmount || Number(swapAmount) <= 0 || fromToken === toToken) return;\n' +
@@ -329,7 +332,7 @@ const walletContent =
 '                <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid " + border, background: bg, display: "flex", alignItems: "center", justifyContent: "center", color: "#4ade80", fontSize: "16px" }}>\u2193</div>\n' +
 '              </div>\n' +
 '              <p style={{ color: subText, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>To</p>\n' +
-'              '              <div style={{ marginBottom: "16px" }}>\n' +
+'              <div style={{ marginBottom: "16px" }}>\n' +
 '                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>\n' +
 '                  {BRIDGE_ROUTES.map(r => (\n' +
 '                    <button key={r.to} onClick={() => setBridgeRoute(r)}\n' +
@@ -389,6 +392,6 @@ const walletContent =
 '}\n';
 
 fs.writeFileSync('app/wallet/page.tsx', walletContent);
-console.log('✅ Wallet page updated with Portfolio/Swap/Bridge tabs');
+console.log('Wallet page updated with Portfolio/Swap/Bridge tabs');
 
-console.log('\n🎉 All done!');
+console.log('All done!');

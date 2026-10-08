@@ -1,4 +1,5 @@
-import { ethers } from "hardhat";
+import hardhat from "hardhat";
+const { ethers } = hardhat;
 import * as fs from "fs";
 import * as path from "path";
 
@@ -6,9 +7,9 @@ const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
 const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a";
 const ZARPAY_SWAP_POOL_ADDRESS = "0x7b3b331260d8147436E76aE035850345ee3F6123";
 
-// 15 USDC and 15 EURC — both use 6 decimals on Arc
-const USDC_AMOUNT = ethers.parseUnits("15", 6);
-const EURC_AMOUNT = ethers.parseUnits("15", 6);
+// 30 USDC and 30 EURC — both use 6 decimals on Arc (EURC balance is the limiting factor)
+const USDC_AMOUNT = ethers.parseUnits("30", 6);
+const EURC_AMOUNT = ethers.parseUnits("30", 6);
 
 const ERC20_ABI = [
   "function approve(address spender, uint256 amount) returns (bool)",

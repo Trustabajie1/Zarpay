@@ -29,6 +29,11 @@ export default function SwapPage() {
   const [swapMessage, setSwapMessage] = useState("");
   const [netOut, setNetOut] = useState<string>("");
   const [feeAmount, setFeeAmount] = useState<string>("");
+  const [netOutRaw, setNetOutRaw] = useState<bigint>(BigInt(0));
+
+  // How much worse a quote is allowed to get between "Get Quote" and the tx confirming,
+  // before we'd rather the swap revert than let the user get a materially worse rate.
+  const SLIPPAGE_TOLERANCE_BPS = BigInt(50); // 0.5%
 
   const isUsdcToEurc = fromToken === "USDC";
   const amountIn = amount && Number(amount) > 0 ? parseUnits(amount, TOKEN_DECIMALS) : BigInt(0);
@@ -99,22 +104,23 @@ export default function SwapPage() {
     setQuoteError("");
     refetchPreview().then((res) => {
       const data = res.data as [bigint, bigint] | undefined;
-      if (data) {
+            if (data) {
         const net = formatUnits(data[0], TOKEN_DECIMALS);
         const fee = formatUnits(data[1], TOKEN_DECIMALS);
-        setNetOut(net); setFeeAmount(fee); setQuote(`~${net} ${toToken}`);
+        setNetOut(net); setFeeAmount(fee); setNetOutRaw(data[0]); setQuote(`~${net} ${toToken}`);
       } else { setQuoteError("Couldn't fetch a quote. Try again."); }
     });
   }
 
-  function runSwap() {
+   function runSwap() {
     setStep("swapping");
     setSwapMessage("Waiting for wallet confirmation...");
+    const minAmountOut = netOutRaw - (netOutRaw * SLIPPAGE_TOLERANCE_BPS) / BigInt(10000);
     writeSwap({
       address: ZARPAY_SWAP_POOL_ADDRESS,
       abi: ZARPAY_SWAP_POOL_ABI,
       functionName: isUsdcToEurc ? "swapUSDCtoEURC" : "swapEURCtoUSDC",
-      args: [amountIn],
+      args: [amountIn, minAmountOut],
     } as any);
   }
 

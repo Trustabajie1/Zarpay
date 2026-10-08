@@ -12,6 +12,10 @@ export type { IAccessControl } from "./@openzeppelin/contracts/access/IAccessCon
 export { IAccessControl__factory } from "./factories/@openzeppelin/contracts/access/IAccessControl__factory";
 export type { Pausable } from "./@openzeppelin/contracts/security/Pausable";
 export { Pausable__factory } from "./factories/@openzeppelin/contracts/security/Pausable__factory";
+export type { ERC20 } from "./@openzeppelin/contracts/token/ERC20/ERC20";
+export { ERC20__factory } from "./factories/@openzeppelin/contracts/token/ERC20/ERC20__factory";
+export type { IERC20Metadata } from "./@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata";
+export { IERC20Metadata__factory } from "./factories/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata__factory";
 export type { IERC20Permit } from "./@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit";
 export { IERC20Permit__factory } from "./factories/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit__factory";
 export type { IERC20 } from "./@openzeppelin/contracts/token/ERC20/IERC20";
@@ -20,5 +24,7 @@ export type { ERC165 } from "./@openzeppelin/contracts/utils/introspection/ERC16
 export { ERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/ERC165__factory";
 export type { IERC165 } from "./@openzeppelin/contracts/utils/introspection/IERC165";
 export { IERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/IERC165__factory";
+export type { MockERC20 } from "./contracts/mocks/MockERC20";
+export { MockERC20__factory } from "./factories/contracts/mocks/MockERC20__factory";
 export type { ZarPaySwapPool } from "./contracts/ZarPaySwapPool";
 export { ZarPaySwapPool__factory } from "./factories/contracts/ZarPaySwapPool__factory";

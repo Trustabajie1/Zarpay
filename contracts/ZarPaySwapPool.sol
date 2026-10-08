@@ -73,15 +73,31 @@ contract ZarPaySwapPool is AccessControl, Pausable, ReentrancyGuard {
         _grantRole(FEE_MANAGER_ROLE, msg.sender);
     }
 
-    function swapUSDCtoEURC(uint256 amountIn) external nonReentrant whenNotPaused returns (uint256 amountOut) {
+    /// @param minAmountOut Revert if the actual output (after fee) would be less than this.
+    ///                     Pass 0 to skip the check (not recommended for production use).
+    function swapUSDCtoEURC(uint256 amountIn, uint256 minAmountOut)
+        external
+        nonReentrant
+        whenNotPaused
+        returns (uint256 amountOut)
+    {
         amountOut = _swap(usdc, eurc, amountIn, msg.sender, msg.sender, true);
+        require(amountOut >= minAmountOut, "slippage: amountOut below minimum");
     }
 
-    function swapEURCtoUSDC(uint256 amountIn) external nonReentrant whenNotPaused returns (uint256 amountOut) {
+    /// @param minAmountOut Revert if the actual output (after fee) would be less than this.
+    function swapEURCtoUSDC(uint256 amountIn, uint256 minAmountOut)
+        external
+        nonReentrant
+        whenNotPaused
+        returns (uint256 amountOut)
+    {
         amountOut = _swap(eurc, usdc, amountIn, msg.sender, msg.sender, false);
+        require(amountOut >= minAmountOut, "slippage: amountOut below minimum");
     }
 
-    function payMerchant(address merchant, uint256 usdcAmountIn)
+    /// @param minEurcOut Revert if the merchant would receive less EURC than this.
+    function payMerchant(address merchant, uint256 usdcAmountIn, uint256 minEurcOut)
         external
         nonReentrant
         whenNotPaused
@@ -90,6 +106,7 @@ contract ZarPaySwapPool is AccessControl, Pausable, ReentrancyGuard {
         require(merchant != address(0), "invalid merchant address");
         uint256 feeAmount;
         (eurcAmountOut, feeAmount) = _swapWithFee(usdc, eurc, usdcAmountIn, msg.sender, merchant, true);
+        require(eurcAmountOut >= minEurcOut, "slippage: amountOut below minimum");
         emit MerchantPaid(msg.sender, merchant, usdcAmountIn, eurcAmountOut, feeAmount);
     }
 
@@ -146,7 +163,7 @@ contract ZarPaySwapPool is AccessControl, Pausable, ReentrancyGuard {
         }
     }
 
-    /// @notice Preview the NET output (after fee) — use this for the UI's "Estimated Receive".
+    /// @notice Preview the NET output (after fee) - use this for the UI's "Estimated Receive".
     function previewSwapAfterFee(uint256 amountIn, bool isUsdcToEurc) external view returns (uint256 netOut, uint256 feeAmount) {
         uint256 grossOut = previewSwap(amountIn, isUsdcToEurc);
         feeAmount = (grossOut * feeBps) / 10_000;
