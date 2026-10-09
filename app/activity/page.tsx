@@ -56,7 +56,8 @@ export default function ActivityPage() {
                     </div>
                   </div>
                   <div style={{ textAlign:"right" }}>
-                    <p style={{ fontSize:"14px", fontWeight:"700", color: tx.type==="sent" ? "var(--red)" : "var(--green)", marginBottom:"4px" }}>{tx.type==="sent"?"-":"+"}{tx.value} {tx.token}</p>
+                    <p style={{ fontSize:"14px", fontWeight:"700", color: tx.type==="sent" ? "var(--red)" : "var(--green)", marginBottom:"4px" }}>{tx.type==="sent"?"-":"+"}{tx.value} USDC
+</p>
                     <span style={{ fontSize:"10px", padding:"2px 8px", borderRadius:"4px", background: tx.isError==="0" ? "var(--green-dim)" : "var(--red-dim)", color: tx.isError==="0" ? "var(--green)" : "var(--red)" }}>{tx.isError==="0"?"Success":"Failed"}</span>
                   </div>
                 </a>
