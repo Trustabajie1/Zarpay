@@ -1,80 +1,46 @@
 import hardhat from "hardhat";
 const { ethers } = hardhat;
-import * as fs from "fs";
-import * as path from "path";
 
-const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
-const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a";
-const ZARPAY_SWAP_POOL_ADDRESS = "0x7b3b331260d8147436E76aE035850345ee3F6123";
-
-// 30 USDC and 30 EURC — both use 6 decimals on Arc (EURC balance is the limiting factor)
-const USDC_AMOUNT = ethers.parseUnits("30", 6);
-const EURC_AMOUNT = ethers.parseUnits("30", 6);
+// Hardcoded new pool address
+const POOL = "0xa9E945043a7a844448c6717CC7E546c827b455b1";
+const USDC = "0x3600000000000000000000000000000000000000";
+const EURC = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a";
 
 const ERC20_ABI = [
   "function approve(address spender, uint256 amount) returns (bool)",
   "function balanceOf(address account) view returns (uint256)",
 ];
-
 const POOL_ABI = [
   "function addLiquidity(address token, uint256 amount)",
 ];
 
 async function main() {
-  const signers = await ethers.getSigners();
-  if (!signers || signers.length === 0) {
-    throw new Error("No signers found. Check your .env file.");
-  }
+  const [deployer] = await ethers.getSigners();
+  console.log("Seeding from:", deployer.address);
 
-  const deployer = signers[0];
-  console.log("Seeding pool with account:", deployer.address);
+  const usdc = await ethers.getContractAt(ERC20_ABI, USDC, deployer);
+  const eurc = await ethers.getContractAt(ERC20_ABI, EURC, deployer);
+  const pool = await ethers.getContractAt(POOL_ABI, POOL, deployer);
 
-  const usdc = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, deployer);
-  const eurc = new ethers.Contract(EURC_ADDRESS, ERC20_ABI, deployer);
-  const pool = new ethers.Contract(ZARPAY_SWAP_POOL_ADDRESS, POOL_ABI, deployer);
+  const usdcBal = await usdc.balanceOf(deployer.address);
+  const eurcBal = await eurc.balanceOf(deployer.address);
+  console.log("USDC balance:", ethers.formatUnits(usdcBal, 6));
+  console.log("EURC balance:", ethers.formatUnits(eurcBal, 6));
 
-  // Check balances first
-  const usdcBalance = await usdc.balanceOf(deployer.address);
-  const eurcBalance = await eurc.balanceOf(deployer.address);
-  console.log("USDC balance:", ethers.formatUnits(usdcBalance, 6));
-  console.log("EURC balance:", ethers.formatUnits(eurcBalance, 6));
+  // Approve both tokens
+  console.log("\nApproving USDC...");
+  await (await usdc.approve(POOL, ethers.MaxUint256)).wait();
+  console.log("Approving EURC...");
+  await (await eurc.approve(POOL, ethers.MaxUint256)).wait();
 
-  if (usdcBalance < USDC_AMOUNT) {
-    throw new Error("Not enough USDC in wallet.");
-  }
-  if (eurcBalance < EURC_AMOUNT) {
-    throw new Error("Not enough EURC in wallet.");
-  }
+  // Seed 20 USDC + 4 EURC (well within your balance)
+  console.log("Adding 20 USDC...");
+  await (await pool.addLiquidity(USDC, ethers.parseUnits("20", 6))).wait();
+  console.log("Adding 4 EURC...");
+  await (await pool.addLiquidity(EURC, ethers.parseUnits("4", 6))).wait();
 
-  // Approve pool to pull USDC
-  console.log("\nApproving pool to pull USDC...");
-  const approveTx1 = await usdc.approve(ZARPAY_SWAP_POOL_ADDRESS, USDC_AMOUNT);
-  await approveTx1.wait();
-  console.log("USDC approved ✅");
-
-  // Seed USDC into pool
-  console.log("Adding USDC liquidity...");
-  const addTx1 = await pool.addLiquidity(USDC_ADDRESS, USDC_AMOUNT);
-  await addTx1.wait();
-  console.log("USDC liquidity added ✅");
-
-  // Approve pool to pull EURC
-  console.log("\nApproving pool to pull EURC...");
-  const approveTx2 = await eurc.approve(ZARPAY_SWAP_POOL_ADDRESS, EURC_AMOUNT);
-  await approveTx2.wait();
-  console.log("EURC approved ✅");
-
-  // Seed EURC into pool
-  console.log("Adding EURC liquidity...");
-  const addTx2 = await pool.addLiquidity(EURC_ADDRESS, EURC_AMOUNT);
-  await addTx2.wait();
-  console.log("EURC liquidity added ✅");
-
-  console.log("\n🎉 Pool seeded successfully!");
-  console.log("Pool now holds 15 USDC and 15 EURC — ready for swaps.");
+  console.log("\nDone! Pool seeded: 20 USDC + 4 EURC");
+  console.log("Max USDC->EURC swap at rate 0.92: ~4 USDC at a time");
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main().catch(console.error);
