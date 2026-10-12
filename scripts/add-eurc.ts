@@ -27,8 +27,10 @@ async function main() {
   console.log("\nApproving EURC...");
   await (await eurc.approve(POOL, ethers.MaxUint256)).wait();
 
-  console.log("Adding 5 EURC to pool...");
-  await (await pool.addLiquidity(EURC, ethers.parseUnits("4", 6))).wait();
+ console.log("Adding 6 EURC to pool...");
+await (await pool.addLiquidity(EURC, ethers.parseUnits("6", 6))).wait();
+
+
 
   const [usdcAfter, eurcAfter] = await pool.getReserves();
   console.log("\nPool after — USDC:", ethers.formatUnits(usdcAfter, 6), "EURC:", ethers.formatUnits(eurcAfter, 6));
