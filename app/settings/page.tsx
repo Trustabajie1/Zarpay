@@ -1,19 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { useRouter } from "next/navigation";
 import { useAppSettings } from "@/components/SettingsContext";
 import { DisconnectButton } from "@/components/DisconnectButton";
 import { BottomNav } from "@/components/BottomNav";
 import { CURRENCY_SYMBOLS } from "@/lib/useSettings";
-import { t } from "@/lib/translations";
 
 const CURRENCIES = ["NGN", "USD", "GBP", "EUR"] as const;
 const LANGUAGES = ["English", "French", "Spanish", "Arabic"] as const;
 
 export default function SettingsPage() {
   const { address } = useAccount();
-  const { settings, updateSettings } = useAppSettings();
+  const { settings, updateSetting } = useAppSettings();
   const [mounted, setMounted] = useState(false);
   const [displayName, setDisplayName] = useState(settings.displayName || "");
   const [saved, setSaved] = useState(false);
@@ -23,7 +21,7 @@ export default function SettingsPage() {
   const shortAddr = address ? address.slice(0,6)+"..."+address.slice(-4) : "";
 
   function handleSaveName() {
-    updateSettings({ displayName });
+    updateSetting("displayName", displayName);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -69,7 +67,7 @@ export default function SettingsPage() {
           <p className="zp-label">Appearance</p>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
             {["dark","light"].map(theme => (
-              <button key={theme} onClick={() => updateSettings({ theme: theme as any })}
+              <button key={theme} onClick={() => updateSetting("theme", theme as "dark" | "light")}
                 style={{ padding:"14px", borderRadius:"12px", border:"1px solid "+(settings.theme===theme?"var(--green-border)":"var(--border)"), background:settings.theme===theme?"var(--green-dim)":"var(--surface-2)", color:settings.theme===theme?"var(--green)":"var(--text-2)", fontWeight:settings.theme===theme?"700":"500", cursor:"pointer", fontSize:"14px", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
                 <span>{theme==="dark"?"🌙":"☀️"}</span>
                 <span style={{ textTransform:"capitalize" }}>{theme}</span>
@@ -83,7 +81,7 @@ export default function SettingsPage() {
           <p className="zp-label">Currency</p>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
             {CURRENCIES.map(c => (
-              <button key={c} onClick={() => updateSettings({ currency: c })}
+              <button key={c} onClick={() => updateSetting("currency", c)}
                 style={{ padding:"14px", borderRadius:"12px", border:"1px solid "+(settings.currency===c?"var(--green-border)":"var(--border)"), background:settings.currency===c?"var(--green-dim)":"var(--surface-2)", color:settings.currency===c?"var(--green)":"var(--text-2)", fontWeight:settings.currency===c?"700":"500", cursor:"pointer", fontSize:"14px" }}>
                 {CURRENCY_SYMBOLS[c]} {c}
               </button>
@@ -96,7 +94,7 @@ export default function SettingsPage() {
           <p className="zp-label">Language</p>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
             {LANGUAGES.map(lang => (
-              <button key={lang} onClick={() => updateSettings({ language: lang })}
+              <button key={lang} onClick={() => updateSetting("language", lang)}
                 style={{ padding:"14px", borderRadius:"12px", border:"1px solid "+(settings.language===lang?"var(--green-border)":"var(--border)"), background:settings.language===lang?"var(--green-dim)":"var(--surface-2)", color:settings.language===lang?"var(--green)":"var(--text-2)", fontWeight:settings.language===lang?"700":"500", cursor:"pointer", fontSize:"14px" }}>
                 {lang}
               </button>
